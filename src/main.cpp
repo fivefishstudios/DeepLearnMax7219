@@ -35,8 +35,8 @@ MD_MAX72XX mx = MD_MAX72XX(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
 
 // Global message buffers shared by Wifi and Scrolling functions
 const uint8_t MESG_SIZE = 255;
-const uint8_t CHAR_SPACING = 1;
-const uint8_t SCROLL_DELAY = 50;
+const uint8_t CHAR_SPACING = 3;
+const uint8_t SCROLL_DELAY = 40;
 
 char curMessage[MESG_SIZE];
 char newMessage[MESG_SIZE];
@@ -44,7 +44,7 @@ bool newMessageAvailable = false;
 
 int prevtime;
 
-uint8_t colData = 0;
+
 
 bool direction = 0; // 0=shift left, 1=shift right
 
@@ -63,10 +63,11 @@ uint8_t scrollDataSource(uint8_t dev, MD_MAX72XX::transformType_t t)
   static enum { S_IDLE,
                 S_NEXT_CHAR,
                 S_SHOW_CHAR,
-                S_SHOW_SPACE } state = S_IDLE;
+                S_SHOW_SPACE } state;  // = S_IDLE;
   static char *p;
   static uint16_t curLen, showLen;
   static uint8_t cBuf[8];
+  uint8_t colData = 0;
 
   // finite state machine to control what we do on the callback
   switch (state)
@@ -143,10 +144,10 @@ void scrollText(void)
 //   the device number requesting the data [0..getDeviceCount()-1]
 //   one of the transformation types in transformType_t) that tells the callback function what shift is being performed 
 // The return value is the data for the column to be shifted into the display.
-uint8_t myCallback(uint8_t dev, MD_MAX72XX::transformType_t t) {
-  // colData = 0b10000000; // MSB=bottom LED; LSB=top LED
-  return colData;
-}
+// uint8_t myCallback(uint8_t dev, MD_MAX72XX::transformType_t t) {
+//   // colData = 0b10000000; // MSB=bottom LED; LSB=top LED
+//   return colData;
+// }
 
 
 void setup()
@@ -167,13 +168,23 @@ void setup()
   // The callback function is invoked when 
   // WRAPAROUND is not active, as the data would automatically supplied within the library.
   // the call to transform() is global (ie, not for an individual buffer).
-  // mx.setShiftDataInCallback(scrollDataSource);
+  mx.setShiftDataInCallback(scrollDataSource);
   // mx.setShiftDataOutCallback(scrollDataSink);   not needed
+
+
+
 
   curMessage[0] = newMessage[0] = '\0';
 
   // Set up message
-  sprintf(curMessage, "Hello World!");
+  // sprintf(curMessage, "Hello World!");
+  // char displayString[] = {'o', 'w', 'e','l', '.', 'c', 'o', 'd', 'e', 's', ' ', 3, 2, 1, 3, 4, 5, 6, 16, 17, 18, 19, 20, '\0'};    // '\0' end of string
+  char displayString[] = "owel.codes \x01\x02\x3\x0F";  // '\0' end of string      
+  sprintf(curMessage, displayString);  
+
+
+
+
 
   // set a specific X,Y pixel (LED)
   // mx.setPoint(4, 1, true);  // Row, Col, True=1=Lit    // row and col are 0 based
@@ -231,9 +242,9 @@ void setup()
 
   // mx.setColumn(20, 0b11111111);  // col# (absolute number, counting number of devices, first col=0), new value for column (0-255)
 
-  mx.setColumn(1, 0b01111110);
-  mx.setColumn(2, 0b11111111);
-  mx.setColumn(3, 0b01111110);
+  // mx.setColumn(1, 0b01111110);
+  // mx.setColumn(2, 0b11111111);
+  // mx.setColumn(3, 0b01111110);
 
 }
 
@@ -252,18 +263,18 @@ void loop()
 
 
   // scanning ... knight rider effect
-  if (direction){  // 0 = SL
-    mx.transform(MD_MAX72XX::TSL);  
-    if (mx.getPoint(3, 31)==true) {
-      direction = 0;
-    }
-  } else {
-    mx.transform(MD_MAX72XX::TSR);
-    if (mx.getPoint(3, 0)==true) {
-      direction = 1;
-    }
-  }
-  delay(30);  // ms
+  // if (direction){  // 0 = SL
+  //   mx.transform(MD_MAX72XX::TSL);  
+  //   if (mx.getPoint(3, 31)==true) {
+  //     direction = 0;
+  //   }
+  // } else {
+  //   mx.transform(MD_MAX72XX::TSR);
+  //   if (mx.getPoint(3, 0)==true) {
+  //     direction = 1;
+  //   }
+  // }
+  // delay(30);  // ms
 
-  // scrollText();
+  scrollText();
 }
